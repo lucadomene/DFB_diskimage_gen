@@ -41,9 +41,10 @@ def generate_random_doc(filename="random_document.docx", num_paragraphs=5, num_i
     # Add a closing paragraph
     doc.add_paragraph(fake.paragraph(nb_sentences=5))
 
-    temp_original = tempfile.mktemp(prefix="docx_original_")
-    docx_original_path = os.path.join(temp_original, filename)
-    doc.save(docx_original_path)
+    original_docx = io.BytesIO()
+
+    doc.save(original_docx)
+    original_docx.seek(0)
 
     """
     Create a copy of src_docx named out_docx with certain XML parts damaged.
@@ -52,7 +53,7 @@ def generate_random_doc(filename="random_document.docx", num_paragraphs=5, num_i
     # Make temp dir to extract zip
     tmpdir = tempfile.mkdtemp(prefix="docx_corrupt_")
     try:
-        with zipfile.ZipFile(docx_original_path, 'r') as zin:
+        with zipfile.ZipFile(original_docx, 'r') as zin:
             zin.extractall(tmpdir)
 
         # Paths to potentially corrupt
@@ -113,16 +114,6 @@ def generate_random_doc(filename="random_document.docx", num_paragraphs=5, num_i
     finally:
         # Clean up temp dir
         shutil.rmtree(tmpdir)
-        shutil.rmtree(temp_original)
-
-def generated_corrupted(path):
-    generate_random_doc(path)
-    corrupt_docx_preserve_media()
 
 if __name__ == "__main__":
-    original = "dummy.docx"
-    corrupted = "corrupt.docx"
-
-    generate_random_doc(original,10,4)
-
-    corrupt_docx_preserve_media(original, corrupted, corrupt_document_xml=True, corrupt_content_types=False)
+    generate_random_doc()
