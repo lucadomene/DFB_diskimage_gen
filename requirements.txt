@@ -1,0 +1,5 @@
+faker
+python-docx
+requests
+pillow
+reportlab
